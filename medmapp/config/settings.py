@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-i(7m!_6h!f2oasj*%h6u$k_+c^sl_+ejep-w$g52@ia(*s2s1y'
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [config("ALLOWED_HOST")]
 
 
 # Application definition
@@ -37,7 +37,39 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # third party apps
+    "corsheaders",
+    "rest_framework",
+    "rest_framework.authtoken",
+    "rest_framework_simplejwt",
+    'drf_yasg',
+    # apps
 ]
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=1000),
+    "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=900),
+}
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://your-frontend-domain.vercel.app",  # production frontend
+    "http://localhost:3000",                    # local frontend
+    "http://127.0.0.1:3000",                    # optional for local testing
+]
+
+CORS_EXPOSE_HEADERS = [
+    "Content-Type",
+    "Content-Disposition",
+]
+
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "Content-Type",
+    "Content-Disposition",
+)
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
