@@ -15,8 +15,32 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from decouple import config
+from rest_framework.permissions import IsAdminUser
 
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+admin_url = config("ADMIN_URL", default="admin/")
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(admin_url, admin.site.urls),
+    path('api/v1/', include('api.v1.urls')),
+]
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Medmapp API",
+        default_version='v1',
+        description="Medmapp backend API documentation",
+        contact=openapi.Contact(email="fayyozusmon@gmail.com"),
+    ),
+    public=True,
+    permission_classes=(IsAdminUser,),  # Only admins can view docs
+)
+
+# Swagger for admins only
+urlpatterns += [
+    path('api/v1/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger-docs'),
+    path('api/v1/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='redoc-docs'),
 ]
