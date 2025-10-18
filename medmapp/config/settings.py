@@ -200,7 +200,7 @@ STATIC_URL = "static/"
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-if ENVIRONMENT == "production":
+if DEBUG:
     # ✅ Cloudinary setup for production
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
