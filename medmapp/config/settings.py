@@ -59,6 +59,18 @@ INSTALLED_APPS = [
     'shifokorlar',
 ]
 
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer <token>"'
+        }
+    },
+    "USE_SESSION_AUTH": False,  # disable Django login in Swagger UI if you're only using JWT
+}
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=1000),
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=900),
@@ -67,7 +79,6 @@ SIMPLE_JWT = {
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "https://your-frontend-domain.vercel.app",  # production frontend
     "http://localhost:3000",                    # local frontend
     "http://127.0.0.1:3000",                    # optional for local testing
 ]
@@ -82,6 +93,15 @@ CORS_ALLOW_HEADERS = (
     "Content-Type",
     "Content-Disposition",
 )
+
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_CLASSES': [
+        'bosh_sahifa.throttles.PostPerDayThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'post_per_day': '5/day',  # 5 requests per IP per day
+    },
+}
 
 
 MIDDLEWARE = [
@@ -180,8 +200,22 @@ STATIC_URL = "static/"
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+if ENVIRONMENT == "production":
+    # ✅ Cloudinary setup for production
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+    CLOUDINARY_STORAGE = {
+        "CLOUD_NAME": config("CLOUDINARY_NAME"),
+        "API_KEY": config("CLOUDINARY_API_KEY"),
+        "API_SECRET": config("CLOUDINARY_API_SECRET"),
+    }
+
+    MEDIA_URL = "/media/"
+else:
+    # ✅ Local storage for development
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -192,14 +226,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "users.User"
 
 # Swagg
-SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "Bearer": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header",
-            "description": 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer <token>"'
-        }
-    },
-    "USE_SESSION_AUTH": False,  # disable Django login in Swagger UI if you're only using JWT
-}
+
+
