@@ -48,6 +48,9 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
     'drf_yasg',
+    "ckeditor",
+    "ckeditor_uploader",
+    'cloudinary_storage',
     # apps
     'users',
     'blog',
@@ -201,7 +204,11 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 if DEBUG:
-    # ✅ Cloudinary setup for production
+    # ✅ Local storage for development
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+else:
+    # ✅ Cloudinary setup for production    
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
     CLOUDINARY_STORAGE = {
@@ -210,12 +217,20 @@ if DEBUG:
         "API_SECRET": config("CLOUDINARY_API_SECRET"),
     }
 
-    MEDIA_URL = "/media/"
-else:
-    # ✅ Local storage for development
-    MEDIA_URL = "/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_ALLOW_NONIMAGE_FILES = False
+CKEDITOR_IMAGE_BACKEND = "pillow"
+CKEDITOR_BROWSE_SHOW_DIRS = True
 
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Full',
+        'height': 300,
+        'width': '100%',
+        'filebrowserBrowseUrl': '/ckeditor/browse/',
+        'filebrowserUploadUrl': '/ckeditor/upload/',
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
