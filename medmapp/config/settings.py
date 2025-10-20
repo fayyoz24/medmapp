@@ -48,9 +48,10 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
     'drf_yasg',
+    "cloudinary",
+    "cloudinary_storage",
     "ckeditor",
     "ckeditor_uploader",
-    'cloudinary_storage',
     # apps
     'users',
     'blog',
@@ -203,19 +204,25 @@ STATIC_URL = "static/"
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-if DEBUG:
-    # ✅ Local storage for development
-    MEDIA_URL = "/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
-else:
-    # ✅ Cloudinary setup for production    
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+# if DEBUG:
+#     # ✅ Local storage for development
+#     MEDIA_URL = "/media/"
+#     MEDIA_ROOT = BASE_DIR / "media"
+# else:
+#     # ✅ Cloudinary setup for production    
+#     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
-    CLOUDINARY_STORAGE = {
-        "CLOUD_NAME": config("CLOUDINARY_NAME"),
-        "API_KEY": config("CLOUDINARY_API_KEY"),
-        "API_SECRET": config("CLOUDINARY_API_SECRET"),
-    }
+#     CLOUDINARY_STORAGE = {
+#         "CLOUD_NAME": config("CLOUDINARY_NAME"),
+#         "API_KEY": config("CLOUDINARY_API_KEY"),
+#         "API_SECRET": config("CLOUDINARY_API_SECRET"),
+#     }
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+
+
 
 CKEDITOR_UPLOAD_PATH = "uploads/"
 CKEDITOR_ALLOW_NONIMAGE_FILES = False
