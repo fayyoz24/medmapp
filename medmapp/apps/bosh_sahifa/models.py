@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
-
+from shifokorlar.models import Shifokor
+from shifoxonalar.models import Shifoxona
 from django.db import models
 from django.core.validators import RegexValidator
 
@@ -34,31 +35,31 @@ class HududTranslation(models.Model):
 
 
 # ---------- DAVOLASH USULI ----------
-class DavolashUsuli(models.Model):
-    class Meta:
-        verbose_name = "Davolash usuli"
-        verbose_name_plural = "Davolash usullari"
-        ordering = ["id"]
+# class DavolashUsuli(models.Model):
+#     class Meta:
+#         verbose_name = "Davolash usuli"
+#         verbose_name_plural = "Davolash usullari"
+#         ordering = ["id"]
 
-    def __str__(self):
-        return self.translations.first().nomi if self.translations.exists() else "Davolash usuli"
+#     def __str__(self):
+#         return self.translations.first().nomi if self.translations.exists() else "Davolash usuli"
 
 
-class DavolashUsuliTranslation(models.Model):
-    davolash_usuli = models.ForeignKey(DavolashUsuli, related_name="translations", on_delete=models.CASCADE)
-    language = models.CharField(
-        max_length=2,
-        choices=[("uz", "Uzbek"), ("ru", "Russian"), ("en", "English")],
-    )
-    nomi = models.CharField(max_length=100)
+# class DavolashUsuliTranslation(models.Model):
+#     davolash_usuli = models.ForeignKey(DavolashUsuli, related_name="translations", on_delete=models.CASCADE)
+#     language = models.CharField(
+#         max_length=2,
+#         choices=[("uz", "Uzbek"), ("ru", "Russian"), ("en", "English")],
+#     )
+#     nomi = models.CharField(max_length=100)
 
-    class Meta:
-        unique_together = ("davolash_usuli", "language")
-        verbose_name = "Davolash usuli (tarjima)"
-        verbose_name_plural = "Davolash usullari (tarjimalar)"
+#     class Meta:
+#         unique_together = ("davolash_usuli", "language")
+#         verbose_name = "Davolash usuli (tarjima)"
+#         verbose_name_plural = "Davolash usullari (tarjimalar)"
 
-    def __str__(self):
-        return f"{self.nomi} ({self.language})"
+#     def __str__(self):
+#         return f"{self.nomi} ({self.language})"
 
 
 # ---------- KONSULTATSIYA ----------
@@ -69,7 +70,7 @@ class Konsultatsiya(models.Model):
     )
 
     hudud = models.ForeignKey(Hudud, on_delete=models.CASCADE)
-    davolash_usuli = models.ForeignKey(DavolashUsuli, on_delete=models.CASCADE)
+    yonalish_amaliyoti = models.ForeignKey("YonalishAmaliyoti", on_delete=models.CASCADE)
     tel_raqam = models.CharField(max_length=15, validators=[phone_validator])
     is_checked = models.BooleanField(default=False)
 
@@ -81,21 +82,20 @@ class Konsultatsiya(models.Model):
         return self.tel_raqam
 
 
-# ---------- KO‘P TARMOQLI TIBBIY YORDAM ----------
-class KopTarmoqliTibbiyYordam(models.Model):
-    logo = models.ImageField(upload_to='bosh_sahifa/kop_tarmoqli_tibbiy_yordam/')
+# ---------- ASOSIY YO‘NALISH ----------
+class AsosiyYonalish(models.Model):
+    logo = models.ImageField(upload_to='bosh_sahifa/asosiy_yonalish/')
 
     class Meta:
-        verbose_name = "Ko‘p tarmoqli tibbiy yordam"
-        verbose_name_plural = "Ko‘p tarmoqli tibbiy yordamlar"
+        verbose_name = "Asosiy yo‘nalish"
+        verbose_name_plural = "Asosiy yo‘nalishlar"
         ordering = ["id"]
 
     def __str__(self):
-        return self.translations.first().title if self.translations.exists() else "Tibbiy yordam"
+        return self.translations.first().title if self.translations.exists() else "Asosiy yo‘nalish"
 
-
-class KopTarmoqliTibbiyYordamTranslation(models.Model):
-    yordam = models.ForeignKey(KopTarmoqliTibbiyYordam, related_name="translations", on_delete=models.CASCADE)
+class AsosiyYonalishTranslation(models.Model):
+    yordam = models.ForeignKey(AsosiyYonalish, related_name="translations", on_delete=models.CASCADE)
     language = models.CharField(max_length=2, choices=[("uz", "Uzbek"), ("ru", "Russian"), ("en", "English")])
     title = models.CharField(max_length=200)
     text = models.TextField()
@@ -108,59 +108,32 @@ class KopTarmoqliTibbiyYordamTranslation(models.Model):
     def __str__(self):
         return f"{self.title} ({self.language})"
 
-
-# ---------- OMMABOP SHIFOXONALAR ----------
-class OmmabopShifoxonalar(models.Model):
-    logo = models.ImageField(upload_to='bosh_sahifa/ommabop_shifoxonalar/')
-
-    class Meta:
-        verbose_name = "Ommabop shifoxona"
-        verbose_name_plural = "Ommabop shifoxonalar"
-        ordering = ["id"]
-
-    def __str__(self):
-        return self.translations.first().title if self.translations.exists() else "Shifoxona"
-
-
-class OmmabopShifoxonalarTranslation(models.Model):
-    shifoxona = models.ForeignKey(OmmabopShifoxonalar, related_name="translations", on_delete=models.CASCADE)
-    language = models.CharField(max_length=2, choices=[("uz", "Uzbek"), ("ru", "Russian"), ("en", "English")])
-    title = models.CharField(max_length=200)
-    text = models.TextField()
-
-    class Meta:
-        unique_together = ("shifoxona", "language")
-        verbose_name = "Shifoxona (tarjima)"
-        verbose_name_plural = "Shifoxonalar (tarjimalar)"
-
-    def __str__(self):
-        return f"{self.title} ({self.language})"
-
-
 # ---------- KAFOLATLANGAN ARZON NARXLAR ----------
-class KafolatlanganArzonNarxlar(models.Model):
-    logo = models.ImageField(upload_to='bosh_sahifa/kafolatlangan_arzon_narxlar/')
+class YonalishAmaliyoti(models.Model):
+    asosiy_yonalish = models.ForeignKey(AsosiyYonalish, on_delete=models.CASCADE)
+    logo = models.ImageField(upload_to='bosh_sahifa/yonalish_amaliyoti/')
     narx = models.PositiveIntegerField()
 
     class Meta:
-        verbose_name = "Kafolatlangan arzon narx"
-        verbose_name_plural = "Kafolatlangan arzon narxlar"
+        verbose_name = "Yonalish amaliyoti"
+        verbose_name_plural = "Yonalish amaliyotlari"
         ordering = ["id"]
 
     def __str__(self):
         return self.translations.first().title if self.translations.exists() else "Narx"
 
 
-class KafolatlanganArzonNarxlarTranslation(models.Model):
-    narx_obj = models.ForeignKey(KafolatlanganArzonNarxlar, related_name="translations", on_delete=models.CASCADE)
+class YonalishAmaliyotiTranslation(models.Model):
+    narx_obj = models.ForeignKey(YonalishAmaliyoti, related_name="translations", on_delete=models.CASCADE)
+
     language = models.CharField(max_length=2, choices=[("uz", "Uzbek"), ("ru", "Russian"), ("en", "English")])
     title = models.CharField(max_length=200)
     text = models.TextField()
 
     class Meta:
         unique_together = ("narx_obj", "language")
-        verbose_name = "Narx (tarjima)"
-        verbose_name_plural = "Narxlar (tarjimalar)"
+        verbose_name = "Yonalish amaliyoti (tarjima)"
+        verbose_name_plural = "Yonalish amaliyotlari (tarjimalar)"
 
     def __str__(self):
         return f"{self.title} ({self.language})"
@@ -206,30 +179,12 @@ class BizningXizmatlarEhtiyojQoplaydiTranslation(models.Model):
     text = models.TextField()
 
 
-# ===================== Mashhur shifokorlar =====================
-class MashhurShifokorlar(models.Model):
-    photo = models.ImageField(upload_to='bosh_sahifa/mashhur_shifokorlar/')
-    rating = models.FloatField(default=5.0)
-    tajriba_yil = models.PositiveIntegerField()
-    jarrohlik_amaliyotlar_soni = models.PositiveIntegerField()
-
-    def __str__(self):
-        return f"{self.id} - Shifokor"
-
-class MashhurShifokorlarTranslation(models.Model):
-    parent = models.ForeignKey(MashhurShifokorlar, related_name='translations', on_delete=models.CASCADE)
-    language = models.CharField(max_length=2, choices=[('uz', 'Uzbek'), ('ru', 'Russian'), ('en', 'English')])
-    ism_familiya = models.CharField(max_length=200)
-    mutaxassislik = models.CharField(max_length=200)
-    maslahat = models.TextField()
-
-
 # ===================== Davolash usuli tanlang =====================
 class DavolashUsuliTanlang(models.Model):
     rating = models.FloatField(default=5.0)
-    location = models.CharField(max_length=200)
+    shifoxona = models.ForeignKey(Shifoxona, on_delete=models.CASCADE)
     davomiylik = models.PositiveIntegerField(help_text="Davolash davomiyligi (kunlarda)")
-    doktor = models.ForeignKey(MashhurShifokorlar, on_delete=models.CASCADE)
+    doktor = models.ForeignKey(Shifokor, on_delete=models.CASCADE)
     narx = models.PositiveIntegerField(help_text="Davolash narxi $da")
 
     def __str__(self):

@@ -1,37 +1,12 @@
 from rest_framework import serializers
-from .models import (Hudud, HududTranslation, 
-                        DavolashUsuli, 
-                        DavolashUsuliTranslation, 
-                        Konsultatsiya,
-                        KopTarmoqliTibbiyYordam,
-                        OmmabopShifoxonalar,
-                        KafolatlanganArzonNarxlar,
-                        Natijalar,
-                        DavolashUsuliTanlang,
-                        BizningXizmatlarEhtiyojQoplaydi,
-                        BizningXizmatlarEhtiyojQoplaydiTranslation,
-                        MashhurShifokorlar,
-                        MashhurShifokorlarTranslation,
-                        KopTarmoqliTibbiyYordamTranslation,
-                        OmmabopShifoxonalarTranslation,
-                        KafolatlanganArzonNarxlarTranslation,
-                        NatijalarTranslation
+from .models import (
+    Hudud, AsosiyYonalish, YonalishAmaliyoti, Natijalar,
+    BizningXizmatlarEhtiyojQoplaydi, DavolashUsuliTanlang,
+    Konsultatsiya
 )
 
-# ---------- Tarjima serializerlari ----------
-class HududTranslationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HududTranslation
-        fields = ["language", "nomi"]
 
-
-class DavolashUsuliTranslationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DavolashUsuliTranslation
-        fields = ["language", "nomi"]
-
-
-# ---------- Asosiy serializerlar ----------
+# =================== HUDUD ===================
 class HududSerializer(serializers.ModelSerializer):
     nomi = serializers.SerializerMethodField()
 
@@ -39,139 +14,145 @@ class HududSerializer(serializers.ModelSerializer):
         model = Hudud
         fields = ["id", "nomi"]
 
+    def get_language(self):
+        request = self.context.get("request")
+        if request:
+            return request.headers.get("Accept-Language", "uz")
+        return "uz"
+
     def get_nomi(self, obj):
-        lang = self.context.get("lang", "uz")
+        lang = self.get_language()
         translation = obj.translations.filter(language=lang).first()
-        return translation.nomi if translation else obj.translations.first().nomi if obj.translations.exists() else None
+        return translation.nomi if translation else None
 
 
-class DavolashUsuliSerializer(serializers.ModelSerializer):
-    nomi = serializers.SerializerMethodField()
+# =================== ASOSIY YO‘NALISH ===================
+class AsosiyYonalishSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+    text = serializers.SerializerMethodField()
 
     class Meta:
-        model = DavolashUsuli
-        fields = ["id", "nomi"]
+        model = AsosiyYonalish
+        fields = ["id", "logo", "title", "text"]
+
+    def get_language(self):
+        request = self.context.get("request")
+        if request:
+            return request.headers.get("Accept-Language", "uz")
+        return "uz"
+
+    def get_translation(self, obj):
+        lang = self.get_language()
+        return obj.translations.filter(language=lang).first()
+
+    def get_title(self, obj):
+        tr = self.get_translation(obj)
+        return tr.title if tr else None
+
+    def get_text(self, obj):
+        tr = self.get_translation(obj)
+        return tr.text if tr else None
+
+
+# =================== YONALISH AMALIYOTI ===================
+class YonalishAmaliyotiSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+    text = serializers.SerializerMethodField()
+    narx = serializers.IntegerField()
+    logo = serializers.ImageField()
+
+    class Meta:
+        model = YonalishAmaliyoti
+        fields = ["id", "logo", "narx", "title", "text"]
+
+    def get_language(self):
+        req = self.context.get("request")
+        return req.headers.get("Accept-Language", "uz") if req else "uz"
+
+    def get_translation(self, obj):
+        return obj.translations.filter(language=self.get_language()).first()
+
+    def get_title(self, obj):
+        tr = self.get_translation(obj)
+        return tr.title if tr else None
+
+    def get_text(self, obj):
+        tr = self.get_translation(obj)
+        return tr.text if tr else None
+
+
+# =================== NATIJALAR ===================
+class NatijalarSerializer(serializers.ModelSerializer):
+    text = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Natijalar
+        fields = ["id", "logo", "statistik_raqam", "text"]
+
+    def get_language(self):
+        req = self.context.get("request")
+        return req.headers.get("Accept-Language", "uz") if req else "uz"
+
+    def get_text(self, obj):
+        lang = self.get_language()
+        tr = obj.translations.filter(language=lang).first()
+        return tr.text if tr else None
+
+
+# =================== BIZNING XIZMATLAR ===================
+class BizningXizmatlarSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+    text = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BizningXizmatlarEhtiyojQoplaydi
+        fields = ["id", "icon", "title", "text"]
+
+    def get_language(self):
+        req = self.context.get("request")
+        return req.headers.get("Accept-Language", "uz") if req else "uz"
+
+    def get_translation(self, obj):
+        return obj.translations.filter(language=self.get_language()).first()
+
+    def get_title(self, obj):
+        tr = self.get_translation(obj)
+        return tr.title if tr else None
+
+    def get_text(self, obj):
+        tr = self.get_translation(obj)
+        return tr.text if tr else None
+
+
+# =================== DAVOLASH USULI TANLANG ===================
+class DavolashUsuliTanlangSerializer(serializers.ModelSerializer):
+    nomi = serializers.SerializerMethodField()
+    shifoxona = serializers.StringRelatedField()
+    doktor = serializers.StringRelatedField()
+
+    class Meta:
+        model = DavolashUsuliTanlang
+        fields = ["id", "nomi", "rating", "davomiylik", "narx", "shifoxona", "doktor"]
+
+    def get_language(self):
+        req = self.context.get("request")
+        return req.headers.get("Accept-Language", "uz") if req else "uz"
 
     def get_nomi(self, obj):
-        lang = self.context.get("lang", "uz")
-        translation = obj.translations.filter(language=lang).first()
-        return translation.nomi if translation else obj.translations.first().nomi if obj.translations.exists() else None
-
+        tr = obj.translations.filter(language=self.get_language()).first()
+        return tr.nomi if tr else None
 
 class KonsultatsiyaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Konsultatsiya
-        fields = ["id", "hudud", "davolash_usuli", "tel_raqam"]
+        fields = ["id", "hudud", "yonalish_amaliyoti", "tel_raqam"]
         extra_kwargs = {
             "tel_raqam": {"required": True},
             "hudud": {"required": True},
-            "davolash_usuli": {"required": True},
+            "yonalish_amaliyoti": {"required": True},
         }
 
     def create(self, validated_data):
         # is_checked har doim default False bo'ladi
         konsultatsiya = Konsultatsiya.objects.create(**validated_data)
         return konsultatsiya
-
-# ---------- KO‘P TARMOQ TIBBIY YORDAM ----------
-class KopTarmoqliTibbiyYordamSerializer(serializers.ModelSerializer):
-    title = serializers.SerializerMethodField()
-    text = serializers.SerializerMethodField()
-    logo = serializers.ImageField(read_only=True)
-
-    class Meta:
-        model = KopTarmoqliTibbiyYordam
-        fields = ["id", "logo", "title", "text"]
-
-    def get_title(self, obj):
-        lang = self.context.get("lang", "uz")
-        translation = obj.translations.filter(language=lang).first()
-        return translation.title if translation else obj.translations.first().title if obj.translations.exists() else None
-
-    def get_text(self, obj):
-        lang = self.context.get("lang", "uz")
-        translation = obj.translations.filter(language=lang).first()
-        return translation.text if translation else obj.translations.first().text if obj.translations.exists() else None
-
-
-# ---------- OMMABOP SHIFOXONALAR ----------
-class OmmabopShifoxonalarSerializer(serializers.ModelSerializer):
-    title = serializers.SerializerMethodField()
-    text = serializers.SerializerMethodField()
-    logo = serializers.ImageField(read_only=True)
-
-    class Meta:
-        model = OmmabopShifoxonalar
-        fields = ["id", "logo", "title", "text"]
-
-    def get_title(self, obj):
-        lang = self.context.get("lang", "uz")
-        translation = obj.translations.filter(language=lang).first()
-        return translation.title if translation else obj.translations.first().title if obj.translations.exists() else None
-
-    def get_text(self, obj):
-        lang = self.context.get("lang", "uz")
-        translation = obj.translations.filter(language=lang).first()
-        return translation.text if translation else obj.translations.first().text if obj.translations.exists() else None
-
-
-
-# ---------- KAFOLATLANGAN ARZON NARXLAR ----------
-class KafolatlanganArzonNarxlarTranslationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = KafolatlanganArzonNarxlarTranslation
-        fields = ["language", "title", "text"]
-
-
-class KafolatlanganArzonNarxlarSerializer(serializers.ModelSerializer):
-    translations = KafolatlanganArzonNarxlarTranslationSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = KafolatlanganArzonNarxlar
-        fields = ["id", "logo", "narx", "translations"]
-
-
-# ---------- NATIJALAR ----------
-class NatijalarTranslationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NatijalarTranslation
-        fields = ["language", "text"]
-
-
-class NatijalarSerializer(serializers.ModelSerializer):
-    translations = NatijalarTranslationSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Natijalar
-        fields = ["id", "logo", "statistik_raqam", "translations"]
-
-
-
-# ===================== Bizning xizmatlar =====================
-class BizningXizmatlarEhtiyojQoplaydiTranslationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BizningXizmatlarEhtiyojQoplaydiTranslation
-        fields = ["language", "title", "text"]
-
-
-class BizningXizmatlarEhtiyojQoplaydiSerializer(serializers.ModelSerializer):
-    translations = BizningXizmatlarEhtiyojQoplaydiTranslationSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = BizningXizmatlarEhtiyojQoplaydi
-        fields = ["id", "icon", "translations"]
-
-
-# ===================== Mashhur shifokorlar =====================
-class MashhurShifokorlarTranslationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MashhurShifokorlarTranslation
-        fields = ["language", "ism_familiya", "mutaxassislik", "maslahat"]
-
-
-class MashhurShifokorlarSerializer(serializers.ModelSerializer):
-    translations = MashhurShifokorlarTranslationSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = MashhurShifokorlar
-        fields = ["id", "photo", "rating", "tajriba_yil", "jarrohlik_amaliyotlar_soni", "translations"]

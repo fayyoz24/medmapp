@@ -96,6 +96,7 @@ CORS_ALLOW_HEADERS = (
     *default_headers,
     "Content-Type",
     "Content-Disposition",
+    "Accept-Language"
 )
 
 REST_FRAMEWORK = {
