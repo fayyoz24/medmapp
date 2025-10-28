@@ -155,13 +155,13 @@ if DEBUG:
 else:
     ALLOWED_HOSTS = [config("ALLOWED_HOST")]
     DATABASES = {
-        # Thiernobalde95$personality_demo
         "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": f'{config("DB_NAME")}',
-            "USER": f'{config("DB_USER")}',
-            "PASSWORD": f'{config("DB_PASSWORD")}',
-            "HOST": f'{config("DB_HOST")}',
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME"),
+            "USER": config("DB_USER"),
+            "PASSWORD": config("DB_PASSWORD"),
+            "HOST": config("DB_HOST"),
+            "PORT": config("DB_PORT", default="5432"),
         }
     }
 
