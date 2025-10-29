@@ -65,6 +65,14 @@ class Shifoxona(models.Model):
     def __str__(self):
         return self.translations.first().title if self.translations.exists() else "Shifoxona"
 
+    def save(self, *args, **kwargs):
+        # Only compress if the image is new or changed
+        if self.logo and hasattr(self.logo, 'file'):
+            # Compress before saving
+            new_image = compress_image(self.logo, quality=70)
+            self.logo.save(self.logo.name, new_image, save=False)
+
+        super().save(*args, **kwargs)
 
 class ShifoxonaTranslation(models.Model):
     shifoxona = models.ForeignKey(Shifoxona, related_name="translations", on_delete=models.CASCADE)

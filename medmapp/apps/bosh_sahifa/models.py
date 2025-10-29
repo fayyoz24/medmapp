@@ -34,34 +34,6 @@ class HududTranslation(models.Model):
         return f"{self.nomi} ({self.language})"
 
 
-# ---------- DAVOLASH USULI ----------
-# class DavolashUsuli(models.Model):
-#     class Meta:
-#         verbose_name = "Davolash usuli"
-#         verbose_name_plural = "Davolash usullari"
-#         ordering = ["id"]
-
-#     def __str__(self):
-#         return self.translations.first().nomi if self.translations.exists() else "Davolash usuli"
-
-
-# class DavolashUsuliTranslation(models.Model):
-#     davolash_usuli = models.ForeignKey(DavolashUsuli, related_name="translations", on_delete=models.CASCADE)
-#     language = models.CharField(
-#         max_length=2,
-#         choices=[("uz", "Uzbek"), ("ru", "Russian"), ("en", "English")],
-#     )
-#     nomi = models.CharField(max_length=100)
-
-#     class Meta:
-#         unique_together = ("davolash_usuli", "language")
-#         verbose_name = "Davolash usuli (tarjima)"
-#         verbose_name_plural = "Davolash usullari (tarjimalar)"
-
-#     def __str__(self):
-#         return f"{self.nomi} ({self.language})"
-
-
 # ---------- KONSULTATSIYA ----------
 class Konsultatsiya(models.Model):
     phone_validator = RegexValidator(
@@ -93,6 +65,15 @@ class AsosiyYonalish(models.Model):
 
     def __str__(self):
         return self.translations.first().title if self.translations.exists() else "Asosiy yo‘nalish"
+    
+    def save(self, *args, **kwargs):
+        # Only compress if the image is new or changed
+        if self.logo and hasattr(self.logo, 'file'):
+            # Compress before saving
+            new_image = compress_image(self.logo, quality=70)
+            self.logo.save(self.logo.name, new_image, save=False)
+
+        super().save(*args, **kwargs)
 
 class AsosiyYonalishTranslation(models.Model):
     yordam = models.ForeignKey(AsosiyYonalish, related_name="translations", on_delete=models.CASCADE)
@@ -122,6 +103,14 @@ class YonalishAmaliyoti(models.Model):
     def __str__(self):
         return self.translations.first().title if self.translations.exists() else "Narx"
 
+    def save(self, *args, **kwargs):
+        # Only compress if the image is new or changed
+        if self.logo and hasattr(self.logo, 'file'):
+            # Compress before saving
+            new_image = compress_image(self.logo, quality=70)
+            self.logo.save(self.logo.name, new_image, save=False)
+
+        super().save(*args, **kwargs)
 
 class YonalishAmaliyotiTranslation(models.Model):
     narx_obj = models.ForeignKey(YonalishAmaliyoti, related_name="translations", on_delete=models.CASCADE)
@@ -150,7 +139,15 @@ class Natijalar(models.Model):
 
     def __str__(self):
         return self.translations.first().text if self.translations.exists() else "Natija"
-
+    
+    def save(self, *args, **kwargs):
+        # Only compress if the image is new or changed
+        if self.logo and hasattr(self.logo, 'file'):
+            # Compress before saving
+            new_image = compress_image(self.logo, quality=70)
+            self.logo.save(self.logo.name, new_image, save=False)
+        
+        super().save(*args, **kwargs)
 
 class NatijalarTranslation(models.Model):
     natija = models.ForeignKey(Natijalar, related_name="translations", on_delete=models.CASCADE)
@@ -172,6 +169,16 @@ class BizningXizmatlarEhtiyojQoplaydi(models.Model):
     def __str__(self):
         return f"{self.id} - Xizmat"
 
+    def save(self, *args, **kwargs):
+        # Only compress if the image is new or changed
+        if self.icon and hasattr(self.icon, 'file'):
+            # Compress before saving
+            new_image = compress_image(self.icon, quality=70)
+            self.icon.save(self.icon.name, new_image, save=False)
+
+        super().save(*args, **kwargs)
+
+        
 class BizningXizmatlarEhtiyojQoplaydiTranslation(models.Model):
     parent = models.ForeignKey(BizningXizmatlarEhtiyojQoplaydi, related_name='translations', on_delete=models.CASCADE)
     language = models.CharField(max_length=2, choices=[('uz', 'Uzbek'), ('ru', 'Russian'), ('en', 'English')])

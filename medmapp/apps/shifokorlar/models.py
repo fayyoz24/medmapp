@@ -19,6 +19,16 @@ class Shifokor(models.Model):
     def __str__(self):
         return f"{self.id} - Shifokor"
 
+    def save(self, *args, **kwargs):
+        # Only compress if the image is new or changed
+        if self.photo and hasattr(self.photo, 'file'):
+            # Compress before saving
+            new_image = compress_image(self.photo, quality=70)
+            self.photo.save(self.photo.name, new_image, save=False)
+
+        super().save(*args, **kwargs)
+
+
 class ShifokorTranslation(models.Model):
     parent = models.ForeignKey(Shifokor, related_name='translations', on_delete=models.CASCADE)
     language = models.CharField(max_length=2, choices=[('uz', 'Uzbek'), ('ru', 'Russian'), ('en', 'English')])
