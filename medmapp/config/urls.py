@@ -39,7 +39,7 @@ schema_view = get_schema_view(
         contact=openapi.Contact(email="fayyozusmon@gmail.com"),
     ),
     public=True,
-    permission_classes=(IsAdminUser,),  # Only admins can view docs
+    # permission_classes=(IsAdminUser,),  # Only admins can view docs
 )
 
 # Swagger for admins only
