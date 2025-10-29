@@ -14,3 +14,7 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 application = get_wsgi_application()
+
+from users.models import User
+User.objects.create_superuser("admin", "admin@example.com", "12345678")
+print("✅ Superuser created: admin / 12345678")
